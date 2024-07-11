@@ -48,4 +48,29 @@ internal enum URLMap {
 
         return containerURL.deletingLastPathComponent().appending(component: path)
     }
+
+    static func getNavigationURL(from path: String, separator: String, using containerURL: URL) -> URL? {
+        guard path.contains(separator) else {
+            return nil
+        }
+
+        let components = path.components(separatedBy: separator)
+
+        guard components.count == 2 else {
+            return nil
+        }
+
+        var containerURL = containerURL.deletingLastPathComponent()
+        var upPathComponents = components[1].components(separatedBy: "../")
+        let count = upPathComponents.count - 1
+
+        if count > 0 {
+            for _ in 0..<count {
+                upPathComponents.removeFirst()
+                containerURL.deleteLastPathComponent()
+            }
+        }
+
+        return containerURL.appending(path: upPathComponents.joined())
+    }
 }

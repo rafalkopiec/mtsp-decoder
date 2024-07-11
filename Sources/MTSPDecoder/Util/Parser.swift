@@ -20,6 +20,8 @@ internal enum Parser {
     private static let mtspName: String = "#METASPACE_NAME"
     private static let mtspPreviewPath: String = "#METASPACE_PREVIEW_PATH"
     private static let mtsp3DPath: String = "#METASPACE_3D_PATH"
+    private static let mtspNavigation: String = "#METASPACE_NAVIGATION"
+    private static let mtspNavigationSeparator: String = " -> "
 
     private static let mtspExpectedVersion: Int = 1
 
@@ -40,6 +42,7 @@ internal enum Parser {
         var name: String?
         var previewPath: String?
         var scenePath: String?
+        var navigationPaths: [String] = []
 
         for line in mtspLines {
             switch line.components(separatedBy: ":").first {
@@ -47,6 +50,10 @@ internal enum Parser {
             case mtspName: name = getStringFrom(line)
             case mtspPreviewPath: previewPath = getStringFrom(line)
             case mtsp3DPath: scenePath = getStringFrom(line)
+            case mtspNavigation: 
+                if let path = getStringFrom(line) {
+                    navigationPaths.append(path)
+                }
             default: break
             }
         }
@@ -63,10 +70,29 @@ internal enum Parser {
             throw DecoderError.containerNoSceneURL
         }
 
+        var navigation: [String: URL] = [:]
+
+        for navigationPath in navigationPaths {
+            if let navigationURL = URLMap.getNavigationURL(
+                from: navigationPath,
+                separator: mtspNavigationSeparator,
+                using: containerURL
+            ) {
+                if let dir = navigationPath.components(separatedBy: mtspNavigationSeparator).first {
+                    navigation[dir] = navigationURL
+                } else {
+                    throw DecoderError.containerNavigationKeyNotRecognised
+                }
+            } else {
+                throw DecoderError.containerNavigationPathNotRecognised
+            }
+        }
+
         return Container(
             name: name,
             previewImageURL: previewURL,
-            sceneURL: sceneURL
+            sceneURL: sceneURL,
+            navigation: navigation
         )
     }
 

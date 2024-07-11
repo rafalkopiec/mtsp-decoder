@@ -42,7 +42,53 @@ final class ParserTests: XCTestCase {
         let expected = Container(
             name: "Untitled",
             previewImageURL: URL(string: "https://metaspace.rocks/mtsp/preview.jpg")!,
-            sceneURL: URL(string: "https://metaspace.rocks/mtsp/file.usdz")!
+            sceneURL: URL(string: "https://metaspace.rocks/mtsp/file.usdz")!,
+            navigation: [:]
+        )
+
+        let data = input.data(using: .utf8)!
+        let result = try Parser.parse(data, containerURL: containerURL)
+
+        XCTAssertEqual(expected, result)
+    }
+
+    func testParse_ValidWithNavigation_Succeed() throws {
+        let containerURL = URL(string: "https://metaspace.rocks/mtsp/index.html")!
+        let input: String = """
+        // Copyright 2024 Rafal Kopiec
+        //
+        // Licensed under the Apache License, Version 2.0 (the "License");
+        // you may not use this file except in compliance with the License.
+        // You may obtain a copy of the License at
+        // http://www.apache.org/licenses/LICENSE-2.0
+        //
+        // Unless required by applicable law or agreed to in writing, software
+        // distributed under the License is distributed on an "AS IS" BASIS,
+        // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        // See the License for the specific language governing permissions and
+        // limitations under the License.
+
+        #METASPACE_HOST
+        #METASPACE_VERSION:1
+        #METASPACE_NAME:"Untitled"
+        #METASPACE_PREVIEW_PATH:"preview.jpg"
+        #METASPACE_3D_PATH:"file.usdz"
+        #METASPACE_NAVIGATION:"red_box" -> "red_box/index.mtsp"
+        #METASPACE_NAVIGATION:"yellow_box" -> "yellow_box/index.mtsp"
+        #METASPACE_NAVIGATION:"green_box" -> "green_box/index.mtsp"
+        #METASPACE_NAVIGATION:"up_level_box" -> "../index.mtsp"
+        """
+
+        let expected = Container(
+            name: "Untitled",
+            previewImageURL: URL(string: "https://metaspace.rocks/mtsp/preview.jpg")!,
+            sceneURL: URL(string: "https://metaspace.rocks/mtsp/file.usdz")!,
+            navigation: [
+                "red_box": URL(string: "https://metaspace.rocks/mtsp/red_box/index.mtsp")!,
+                "yellow_box": URL(string: "https://metaspace.rocks/mtsp/yellow_box/index.mtsp")!,
+                "green_box": URL(string: "https://metaspace.rocks/mtsp/green_box/index.mtsp")!,
+                "up_level_box": URL(string: "https://metaspace.rocks/index.mtsp")!,
+            ]
         )
 
         let data = input.data(using: .utf8)!
@@ -77,7 +123,8 @@ final class ParserTests: XCTestCase {
         let expected = Container(
             name: "Untitled",
             previewImageURL: URL(string: "https://metaspace.rocks/mtsp/preview.jpg")!,
-            sceneURL: URL(string: "https://metaspace.rocks/mtsp/file.usdz")!
+            sceneURL: URL(string: "https://metaspace.rocks/mtsp/file.usdz")!,
+            navigation: [:]
         )
 
         let data = input.data(using: .utf8)!

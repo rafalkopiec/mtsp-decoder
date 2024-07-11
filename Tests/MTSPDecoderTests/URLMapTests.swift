@@ -70,4 +70,36 @@ final class URLMapTests: XCTestCase {
         let result = URLMap.getFileURL(from: path, using: containerURL)
         XCTAssertNil(result)
     }
+
+    func testNavigationURL_ViablePath_Succeed() {
+        let path = "some_path -> result/index.mtsp"
+        let containerURL = URL(string: "https://metaspace.rocks/mtsp/index.mtsp")!
+        let expected = URL(string: "https://metaspace.rocks/mtsp/result/index.mtsp")
+        let result = URLMap.getNavigationURL(from: path, separator: " -> ", using: containerURL)
+        XCTAssertEqual(expected, result)
+    }
+
+    func testNavigationURL_ViablePathUpOneLevel_Succeed() {
+        let path = "some_path -> ../index.mtsp"
+        let containerURL = URL(string: "https://metaspace.rocks/mtsp/index.mtsp")!
+        let expected = URL(string: "https://metaspace.rocks/index.mtsp")
+        let result = URLMap.getNavigationURL(from: path, separator: " -> ", using: containerURL)
+        XCTAssertEqual(expected, result)
+    }
+
+    func testNavigationURL_ViablePathUpTwoLevels_Succeed() {
+        let path = "some_path -> ../../index.mtsp"
+        let containerURL = URL(string: "https://metaspace.rocks/mtsp/path/index.mtsp")!
+        let expected = URL(string: "https://metaspace.rocks/index.mtsp")
+        let result = URLMap.getNavigationURL(from: path, separator: " -> ", using: containerURL)
+        XCTAssertEqual(expected, result)
+    }
+
+    func testNavigationURL_NonViablePath_Fail() {
+        let path = "some_path - result/index.mtsp"
+        let containerURL = URL(string: "https://metaspace.rocks/mtsp/index.mtsp")!
+        let expected = URL(string: "https://metaspace.rocks/mtsp/result/index.mtsp")
+        let result = URLMap.getNavigationURL(from: path, separator: " -> ", using: containerURL)
+        XCTAssertNotEqual(expected, result)
+    }
 }

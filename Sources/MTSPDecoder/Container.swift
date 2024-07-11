@@ -23,4 +23,7 @@ public struct Container: Equatable, Sendable, Hashable, Codable {
 
     /// The URL to the metaspace scene, a `.usdz` 3D file.
     public let sceneURL: URL
+
+    /// The dictionary of entity names to `Container` URL destinations.
+    public let navigation: [String: URL]
 }

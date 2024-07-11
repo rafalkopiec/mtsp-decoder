@@ -21,4 +21,6 @@ public enum DecoderError: Error {
     case containerNotRecognised
     case containerNoPreviewURL
     case containerNoSceneURL
+    case containerNavigationPathNotRecognised
+    case containerNavigationKeyNotRecognised
 }
